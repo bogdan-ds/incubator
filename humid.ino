@@ -15,12 +15,12 @@ void switch_relay(int relay, int state) {
 }
 
 void operate_device(int ref, int lower, int higher, int device) {
-  if(ref < lower & digitalRead(device) != HIGH) {
+  if(ref < lower & digitalRead(device) != ON) {
     switch_relay(device, ON);
     Serial.print("Switching on device on pin:\t");
     Serial.print(device);
   }
-  if(ref > higher & digitalRead(device) != LOW) {
+  if(ref > higher & digitalRead(device) != OFF) {
     switch_relay(device, OFF);
     Serial.print("Switching off device on pin: \t");
     Serial.print(device);
@@ -33,6 +33,8 @@ void setup() {
 
   dht.begin();
   pinMode(HUMIDIFIER, OUTPUT);
+  pinMode(HEAT, OUTPUT);
+
 }
 
 void loop() {
