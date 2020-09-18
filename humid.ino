@@ -21,13 +21,13 @@ void switch_relay(int relay, int state) {
   digitalWrite(relay, state);
 }
 
-void operate_device(int ref, int lower, int higher, int device) {
-  if (ref < lower & digitalRead(device) != ON) {
+void operate_device(int sensor_reading, int lower_threshold, int upper_threshold, int device) {
+  if (sensor_reading < lower_threshold & digitalRead(device) != ON) {
     switch_relay(device, ON);
     Serial.print("Switching on device on pin:\t");
     Serial.print(device);
   }
-  if (ref > higher & digitalRead(device) != OFF) {
+  if (sensor_reading > upper_threshold & digitalRead(device) != OFF) {
     switch_relay(device, OFF);
     Serial.print("Switching off device on pin: \t");
     Serial.print(device);
@@ -35,7 +35,7 @@ void operate_device(int ref, int lower, int higher, int device) {
 }
 
 
-void periodic_action(int device, unsigned long period, unsigned long duration) {
+bool periodic_action(int device, unsigned long period, unsigned long duration) {
   currentMillis = millis();
   if (activated == true && (currentMillis - startMillis >= duration)) {
     switch_relay(device, OFF);
@@ -48,6 +48,7 @@ void periodic_action(int device, unsigned long period, unsigned long duration) {
     startMillis = currentMillis;
     activated = true;
   }
+  return activated;
 }
 
 void setup() {
@@ -64,10 +65,10 @@ void setup() {
 void loop() {
   delay(1000);
 
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
 
-  if (isnan(h) || isnan(t)) {
+  if (isnan(humidity) || isnan(temperature)) {
     Serial.println(F("Failed to read from DHT sensor!"));
     LCD.setCursor(0, 1);
     LCD.clear();
@@ -75,7 +76,11 @@ void loop() {
     return;
   }
 
-  periodic_action(HUMIDIFIER, 30000, 10000);
+  
+  activated = periodic_action(HUMIDIFIER, 300000, 60000);
+  if (activated == false) {
+    operate_device(humidity, 80, 95, HUMIDIFIER);
+  }
 
 
   Serial.print(F("Humidity: "));
@@ -83,18 +88,18 @@ void loop() {
   LCD.clear();
   LCD.print("Humidity: ");
   LCD.setCursor(10, 0);
-  LCD.print(h);
+  LCD.print(humidity);
   LCD.setCursor(15, 0);
   LCD.print('%');
   LCD.setCursor(0, 2);
-  Serial.print(h);
+  Serial.print(humidity);
   Serial.print(F("%  Temperature: "));
   LCD.print("Temp: ");
   LCD.setCursor(6, 2);
-  LCD.print(t);
+  LCD.print(temperature);
   LCD.setCursor(12, 2);
   LCD.print("C");
-  Serial.print(t);
+  Serial.print(temperature);
   Serial.print(F("°C "));
   Serial.print("\n");
 }
