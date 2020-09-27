@@ -53,7 +53,7 @@ bool periodic_action(int device, unsigned long period, unsigned long duration) {
 
 void setup() {
   Serial.begin(9600);
-  Serial.println(F("Starting incubator debug!"));
+  Serial.println(F("Botting..."));
   dht.begin();
   LCD.begin(16, 2);
   LCD.print("Booting...");
@@ -76,12 +76,10 @@ void loop() {
     return;
   }
 
-  
-  activated = periodic_action(HUMIDIFIER, 300000, 60000);
+  activated = periodic_action(HUMIDIFIER, 18000000, 180000);
   if (activated == false) {
-    operate_device(humidity, 80, 95, HUMIDIFIER);
+    operate_device(humidity, 70, 90, HUMIDIFIER);
   }
-
 
   Serial.print(F("Humidity: "));
   LCD.setCursor(0, 1);
